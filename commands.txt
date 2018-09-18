@@ -1,0 +1,22 @@
+python pacman.py
+python pacman.py --layout test_maze --pacman GoWestAgent
+python pacman.py --layout tiny_maze --pacman GoWestAgent
+python pacman.py -h
+python pacman.py -l tiny_maze -p SearchAgent -a fn=tiny_maze_search
+python pacman.py -l tiny_maze -p SearchAgent
+python pacman.py -l medium_maze -p SearchAgent
+python pacman.py -l big_maze -z .5 -p SearchAgent
+python pacman.py -l medium_maze -p SearchAgent -a fn=bfs
+python pacman.py -l big_maze -p SearchAgent -a fn=bfs -z .5
+python eight_puzzle.py
+python pacman.py -l medium_maze -p SearchAgent -a fn=ucs
+python pacman.py -l medium_dotted_maze -p StayEastSearchAgent
+python pacman.py -l medium_scary_maze -p StayWestSearchAgent
+python pacman.py -l big_maze -z .5 -p SearchAgent -a fn=a_star,heuristic=manhattan_heuristic
+python pacman.py -l tiny_corners -p SearchAgent -a fn=bfs,prob=CornersProblem
+python pacman.py -l medium_corners -p SearchAgent -a fn=bfs,prob=CornersProblem
+python pacman.py -l medium_corners -p AStarCornersAgent -z 0.5
+python pacman.py -l test_search -p AStarFoodSearchAgent
+python pacman.py -l tricky_search -p AStarFoodSearchAgent
+python pacman.py -l big_search -p ClosestDotSearchAgent -z .5 
+python pacman.py -l big_search -p ApproximateSearchAgent -z .5 -q 
