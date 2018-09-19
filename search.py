@@ -28,7 +28,6 @@ class SearchProblem:
 
     You do not need to change anything in this class, ever.
     """
-
     def get_start_state(self):
         """Return the start state for the search problem."""
         util.raise_not_defined()
@@ -80,28 +79,22 @@ def depth_first_search(problem):
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
     """
-    list_of_actions = util.Stack()
-
     closed_list = []
     stack = util.Stack()
     for node in problem.get_successors(problem.get_start_state()):
-        stack.push(node)
+        stack.push((node, []))
 
     while not stack.is_empty():
         node = stack.pop()
-        if problem.is_goal_state(node[0]):
-            list_of_actions.push(node)
-            return [node[1] for node in list_of_actions.list]
+        if problem.is_goal_state(node[0][0]):
+            node[1].append(node[0][1])
+            return node[1]
         if node[0] not in closed_list:
-            list_of_actions.push(node)
             closed_list.append(node[0])
-
-            successors = problem.get_successors(node[0])
-            if len(successors) == 0:
-                list_of_actions.pop()
-            else:
-                for nextNode in successors:
-                    stack.push(nextNode)
+            node[1].append(node[0][1])
+            successors = problem.get_successors(node[0][0])
+            for nextNode in successors:
+                stack.push((nextNode, node[1]))
 
 
 def breadth_first_search(problem):
