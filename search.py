@@ -79,7 +79,7 @@ def depth_first_search(problem):
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
     """
-    closed_list = []
+    closed_list = [problem.get_start_state()]
     stack = util.Stack()
     for first_node in problem.get_successors(problem.get_start_state()):
         stack.push([first_node[0], [first_node[1]]])
@@ -99,7 +99,21 @@ def depth_first_search(problem):
 def breadth_first_search(problem):
     """Run BFS on the given problem."""
     # *** YOUR CODE HERE ***
-    util.raise_not_defined()
+    closed_list = [problem.get_start_state()]
+    queue = util.Queue()
+    for first_node in problem.get_successors(problem.get_start_state()):
+        queue.push([first_node[0], [first_node[1]]])
+
+    while not queue.is_empty():
+        node = queue.pop()
+        if problem.is_goal_state(node[0]):
+            return node[1]
+        if node[0] not in closed_list:
+            closed_list.append(node[0])
+            for nextNode in problem.get_successors(node[0]):
+                path = node[1][:]
+                path.append(nextNode[1])
+                queue.push([nextNode[0], path])
 
 
 def uniform_cost_search(problem):
