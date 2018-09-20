@@ -81,20 +81,19 @@ def depth_first_search(problem):
     """
     closed_list = []
     stack = util.Stack()
-    for node in problem.get_successors(problem.get_start_state()):
-        stack.push((node, []))
+    for first_node in problem.get_successors(problem.get_start_state()):
+        stack.push([first_node[0], [first_node[1]]])
 
     while not stack.is_empty():
         node = stack.pop()
-        if problem.is_goal_state(node[0][0]):
-            node[1].append(node[0][1])
+        if problem.is_goal_state(node[0]):
             return node[1]
         if node[0] not in closed_list:
             closed_list.append(node[0])
-            node[1].append(node[0][1])
-            successors = problem.get_successors(node[0][0])
-            for nextNode in successors:
-                stack.push((nextNode, node[1]))
+            for nextNode in problem.get_successors(node[0]):
+                path = node[1][:]
+                path.append(nextNode[1])
+                stack.push([nextNode[0], path])
 
 
 def breadth_first_search(problem):
