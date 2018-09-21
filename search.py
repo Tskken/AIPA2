@@ -81,7 +81,10 @@ def search(problem, fringe):
     closed_list = [problem.get_start_state()]
 
     # Expand start state and add its children to the fringe
-    # Note: Fringe structure is a list of 2 items, [node name (ie A), list of paths that got you to that node]
+    # Note: DFS and BFS fringe structure is a list of 2 items, [
+    #   node name (ie. A), list of paths that got you to that node]
+    #   UCS uses a priority queue and is type checked for it. fringe structure is then 3 items
+    #   node name (ie. A), lis tof paths that got you to that node, accumulative cost to get to that node]
     for first_node in problem.get_successors(problem.get_start_state()):
         if type(fringe) is util.PriorityQueue:
             fringe.push([first_node[0], [first_node[1]], first_node[2]], first_node[2])
@@ -107,9 +110,12 @@ def search(problem, fringe):
                 # Add next nodes path to list
                 path.append(nextNode[1])
                 # Add node to fringe
+                # Note: does a type check for priority queue's to handle UCS
                 if type(fringe) is util.PriorityQueue:
+                    # Add next state to fringe with a cost for UCS
                     fringe.push([nextNode[0], path, node[2] + nextNode[2]], node[2] + nextNode[2])
                 else:
+                    # Add next state to fringe
                     fringe.push([nextNode[0], path])
 
 
