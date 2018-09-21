@@ -70,64 +70,23 @@ def tiny_maze_search(problem):
     return [s, s, w, s, w, w, s, w]
 
 
-def search(problem, fringe_type):
+def search(problem, fringe):
     """Runs a search problem based on the fringe type you give it
 
     will work for DFS with a stack and BFS with a queue
 
     returns a path to the gold as a list of actions
     """
-
     # Create closed node list with the start state as its first item
     closed_list = [problem.get_start_state()]
 
     # Expand start state and add its children to the fringe
     # Note: Fringe structure is a list of 2 items, [node name (ie A), list of paths that got you to that node]
     for first_node in problem.get_successors(problem.get_start_state()):
-        fringe_type.push([first_node[0], [first_node[1]]])
-
-    # Loop while there is still nodes to expand in the fringe
-    while not fringe_type.is_empty():
-        # Pop node off fringe
-        node = fringe_type.pop()
-        # Check if the current node is the goal state
-        if problem.is_goal_state(node[0]):
-            # Return path to goal state
-            return node[1]
-        # Check if node is in closed list
-        if node[0] not in closed_list:
-            # Add node to closed list
-            closed_list.append(node[0])
-            # Expand node adding its children to the fringe
-            for nextNode in problem.get_successors(node[0]):
-                # Copy path from past node
-                path = node[1][:]
-                # Add next nodes path to list
-                path.append(nextNode[1])
-                # Add node to fringe
-                fringe_type.push([nextNode[0], path])
-
-
-def depth_first_search(problem):
-    """Run DFS on the given problem."""
-    return search(problem, util.Stack())
-
-
-def breadth_first_search(problem):
-    """Run BFS on the given problem."""
-    return search(problem, util.Queue())
-
-
-def uniform_cost_search(problem):
-    """Run UCS on the given problem."""
-    # Create closed node list with the start state as its first item
-    closed_list = [problem.get_start_state()]
-
-    # Expand start state and add its children to the fringe
-    # Note: Fringe structure is a list of 2 items, [node name (ie A), list of paths that got you to that node]
-    fringe = util.PriorityQueue()
-    for first_node in problem.get_successors(problem.get_start_state()):
-        fringe.push([first_node[0], [first_node[1]], first_node[2]], first_node[2])
+        if type(fringe) is util.PriorityQueue:
+            fringe.push([first_node[0], [first_node[1]], first_node[2]], first_node[2])
+        else:
+            fringe.push([first_node[0], [first_node[1]]])
 
     # Loop while there is still nodes to expand in the fringe
     while not fringe.is_empty():
@@ -148,7 +107,25 @@ def uniform_cost_search(problem):
                 # Add next nodes path to list
                 path.append(nextNode[1])
                 # Add node to fringe
-                fringe.push([nextNode[0], path, node[2] + nextNode[2]], node[2] + nextNode[2])
+                if type(fringe) is util.PriorityQueue:
+                    fringe.push([nextNode[0], path, node[2] + nextNode[2]], node[2] + nextNode[2])
+                else:
+                    fringe.push([nextNode[0], path])
+
+
+def depth_first_search(problem):
+    """Run DFS on the given problem."""
+    return search(problem, util.Stack())
+
+
+def breadth_first_search(problem):
+    """Run BFS on the given problem."""
+    return search(problem, util.Queue())
+
+
+def uniform_cost_search(problem):
+    """Run UCS on the given problem."""
+    return search(problem, util.PriorityQueue())
 
 
 def null_heuristic(state, problem=None):
