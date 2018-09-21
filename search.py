@@ -127,7 +127,7 @@ def uniform_cost_search(problem):
     # Note: Fringe structure is a list of 2 items, [node name (ie A), list of paths that got you to that node]
     fringe = util.PriorityQueue()
     for first_node in problem.get_successors(problem.get_start_state()):
-        fringe.push([first_node[0], [first_node[1]]], first_node[2])
+        fringe.push([first_node[0], [first_node[1]], first_node[2]], first_node[2])
 
     # Loop while there is still nodes to expand in the fringe
     while not fringe.is_empty():
@@ -148,7 +148,7 @@ def uniform_cost_search(problem):
                 # Add next nodes path to list
                 path.append(nextNode[1])
                 # Add node to fringe
-                fringe.push([nextNode[0], path], nextNode[2])
+                fringe.push([nextNode[0], path, node[2] + nextNode[2]], node[2] + nextNode[2])
 
 
 def null_heuristic(state, problem=None):
