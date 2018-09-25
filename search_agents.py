@@ -637,7 +637,7 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = game_state.get_walls()
         problem = AnyFoodSearchProblem(game_state)
 
-        util.raise_not_defined()
+        return search.bfs(problem)
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -676,7 +676,19 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         Fill this in with a goal test that will complete the problem
         definition.
         """
-        util.raise_not_defined()
+        closest = 9999  # Want to not have to use this line
+
+        # Finds nearest food using the manhattan_distance function
+        for food in self.food.as_list():
+            distance = util.manhattan_distance(state, food)
+            if distance < closest:
+                closest = distance
+                nearest_food = food
+
+        if state == nearest_food:
+            return True
+
+        return False
 
 
 def maze_distance(point1, point2, game_state):
