@@ -23,6 +23,21 @@ description for details.
 
 Good luck and happy searching!
 
+Author: Dylan Blanchard and Sloan Anderson
+Class: CSI-480-01
+Assignment: PA 2 -- Search
+Due Date: September 26, 2018 11:59 PM
+
+Certification of Authenticity:
+I certify that this is entirely my own work, except where I have given
+fully-documented references to the work of others. I understand the definition
+and consequences of plagiarism and acknowledge that the assessor of this
+assignment may, for the purpose of assessing this assignment:
+- Reproduce this assignment and provide a copy to another member of academic
+- staff; and/or Communicate a copy of this assignment to a plagiarism checking
+- service (which may then retain a copy of this assignment on its database for
+- the purpose of future plagiarism checking)
+
 ----------------------
 Champlain College CSI-480, Fall 2018
 The following code was adapted by Joshua Auerbach (jauerbach@champlain.edu)
@@ -337,14 +352,12 @@ class CornersProblem(search.SearchProblem):
         self.starting_position = starting_game_state.get_pacman_position()
         top, right = self.walls.height - 2, self.walls.width - 2
         self.corners = ((1, 1), (1, top), (right, 1), (right, top))
+        self.corner_states = []
         for corner in self.corners:
             if not starting_game_state.has_food(*corner):
                 print('Warning: no food in corner ' + str(corner))
+            self.corner_states.append([corner, False])
         self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
-
-        # Please add any code here which you would like to use
-        # in initializing the problem
-        # *** YOUR CODE HERE ***
 
     def get_start_state(self):
         """Return the start state for the search problem.
@@ -354,16 +367,17 @@ class CornersProblem(search.SearchProblem):
         Important:
             start state is in your state space, not the full Pacman state space
         """
-        # *** YOUR CODE HERE ***
-        util.raise_not_defined()
+        return self.starting_position
 
     def is_goal_state(self, state):
         """Return True if and only if the state is a valid goal state.
 
         Overrides search.SearchProblem.is_goal_state
         """
-        # *** YOUR CODE HERE ***
-        util.raise_not_defined()
+        for corner in self.corner_states:
+            if not corner[1]:
+                return False
+        return True
 
     def get_successors(self, state):
         """Return successor states, the actions they require, and a cost of 1.
@@ -377,6 +391,10 @@ class CornersProblem(search.SearchProblem):
             required to get there, and 'step_cost' is the incremental
             cost of expanding to that successor
         """
+        for corner in self.corner_states:
+            if corner[0][0] == state[0] and corner[0][1] == state[1]:
+                corner[1] = True
+
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST,
                        Directions.WEST]:
@@ -384,16 +402,18 @@ class CornersProblem(search.SearchProblem):
             # legal.
             # Here's a code snippet for figuring out whether a new position
             # hits a wall:
-            #   x,y = current_position
-            #   dx, dy = Actions.direction_to_vector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hits_wall = self.walls[nextx][nexty]
+            x, y = state
+            dx, dy = Actions.direction_to_vector(action)
+            next_x, next_y = int(x + dx), int(y + dy)
+            hits_wall = self.walls[next_x][next_y]
 
             # *** YOUR CODE HERE ***
             # Note pass does nothing. It is only needed as a placeholder for
             # an empty code block.  You should remove it once you have written
             # actual code
-            pass
+            if not hits_wall:
+                next_state = ((next_x, next_y), action, 1)
+                successors.append(next_state)
 
         self._expanded += 1  # DO NOT CHANGE
         return successors
@@ -435,8 +455,16 @@ def corners_heuristic(state, problem):
     #   problem.corners  -- these are the corner coordinates
     #   problem.walls  -- these are the walls of the maze, as a Grid (game.py)
 
-    # *** YOUR CODE HERE ***
-    return 0  # Default to trivial solution
+    distances = []
+
+    for corner in problem.corner_states:
+        if not corner[1]:
+            distances.append(util.manhattan_distance(state, corner[0]))
+
+    if len(distances) == 0:
+        return 0
+
+    return max(distances)  # Default to trivial solution
 
 
 class AStarCornersAgent(SearchAgent):

@@ -1,5 +1,20 @@
 """Here you will implement generic search algorithms.
 
+Author: Dylan Blanchard and Sloan Anderson
+Class: CSI-480-01
+Assignment: PA 2 -- Search
+Due Date: September 26, 2018 11:59 PM
+
+Certification of Authenticity:
+I certify that this is entirely my own work, except where I have given
+fully-documented references to the work of others. I understand the definition
+and consequences of plagiarism and acknowledge that the assessor of this
+assignment may, for the purpose of assessing this assignment:
+- Reproduce this assignment and provide a copy to another member of academic
+- staff; and/or Communicate a copy of this assignment to a plagiarism checking
+- service (which may then retain a copy of this assignment on its database for
+- the purpose of future plagiarism checking)
+
 Champlain College CSI-480, Fall 2018
 The following code was adapted by Joshua Auerbach (jauerbach@champlain.edu)
 from the UC Berkeley Pacman Projects (see license and attribution below).
@@ -28,6 +43,7 @@ class SearchProblem:
 
     You do not need to change anything in this class, ever.
     """
+
     def get_start_state(self):
         """Return the start state for the search problem."""
         util.raise_not_defined()
@@ -71,27 +87,24 @@ def tiny_maze_search(problem):
 
 
 def search(problem, fringe):
-    """Runs a search problem based on the fringe type you give it
+    """Return a list of actions to get to a location.
 
-    will work for DFS with a stack and BFS with a queue
+    - Runs DFS if fringe is a stack
+    - Runs BFS if fringe is a queue
+    - Runs UCS if fringe is a priority queue
 
-    returns a path to the gold as a list of actions
+    For generalized search actions
     """
-    # Create closed node list with the start state as its first item
-    closed_list = [problem.get_start_state()]
+    closed_list = []
 
-    # Expand start state and add its children to the fringe
-    # Note: DFS and BFS fringe structure is a list of 2 items, [
-    #   node name (ie. A), list of paths that got you to that node]
-    #   UCS uses a priority queue and is type checked for it. fringe structure is then 3 items
-    #   node name (ie. A), lis tof paths that got you to that node, accumulative cost to get to that node]
-    for first_node in problem.get_successors(problem.get_start_state()):
-        if type(fringe) is util.PriorityQueue:
-            fringe.push([first_node[0], [first_node[1]], first_node[2]], first_node[2])
-        else:
-            fringe.push([first_node[0], [first_node[1]]])
+    # Add start state to fringe
+    # type checks for PriorityQueue
+    if type(fringe) is util.PriorityQueue:
+        fringe.push((problem.get_start_state(), [], 0), 0)
+    else:
+        fringe.push((problem.get_start_state(), []))
 
-    # Loop while there is still nodes to expand in the fringe
+    # Loop while there is nodes in fringe to expand
     while not fringe.is_empty():
         # Pop node off fringe
         node = fringe.pop()
@@ -113,10 +126,11 @@ def search(problem, fringe):
                 # Note: does a type check for priority queue's to handle UCS
                 if type(fringe) is util.PriorityQueue:
                     # Add next state to fringe with a cost for UCS
-                    fringe.push([nextNode[0], path, node[2] + nextNode[2]], node[2] + nextNode[2])
+                    fringe.push((nextNode[0], path, node[2] + nextNode[2]),
+                                node[2] + nextNode[2])
                 else:
                     # Add next state to fringe
-                    fringe.push([nextNode[0], path])
+                    fringe.push((nextNode[0], path))
 
 
 def depth_first_search(problem):
@@ -150,7 +164,8 @@ def a_star_search(problem, heuristic=null_heuristic):
     """
     closed_list = []
     fringe = util.PriorityQueue()
-    fringe.push((problem.get_start_state(), []), null_heuristic(problem.get_start_state(), problem))
+    fringe.push((problem.get_start_state(), []),
+                null_heuristic(problem.get_start_state(), problem))
     while not fringe.is_empty():
         node = fringe.pop()
         if problem.is_goal_state(node[0]):
@@ -159,8 +174,10 @@ def a_star_search(problem, heuristic=null_heuristic):
             closed_list.append(node[0])
             for nextNode in problem.get_successors(node[0]):
                 if nextNode[0] not in closed_list:
-                    cost = problem.get_cost_of_actions(node[1] + [nextNode[1]]) + heuristic(nextNode[0], problem)
-                    fringe.push((nextNode[0], node[1] + [nextNode[1]]), cost)
+                    fringe.push((nextNode[0], node[1] + [nextNode[1]]),
+                                problem.get_cost_of_actions(
+                                    node[1] + [nextNode[1]]) +
+                                heuristic(nextNode[0], problem))
 
 
 # Abbreviations
