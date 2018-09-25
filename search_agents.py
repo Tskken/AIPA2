@@ -583,8 +583,14 @@ def food_heuristic(state, problem):
     problem.heuristic_info['wall_count']
     """
     position, food_grid = state
-    # *** YOUR CODE HERE ***"
-    return 0
+    maximum = 0
+    for food in food_grid.as_list():
+        distance = util.manhattan_distance(position, food)
+
+        if distance > maximum:
+            maximum = distance
+
+    return maximum
 
 
 class ClosestDotSearchAgent(SearchAgent):
