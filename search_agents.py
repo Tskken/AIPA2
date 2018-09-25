@@ -356,7 +356,6 @@ class CornersProblem(search.SearchProblem):
             if not starting_game_state.has_food(*corner):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
-        self.corner_states = [[corner, False] for corner in self.corners]
 
     def get_start_state(self):
         """Return the start state for the search problem.
@@ -367,7 +366,7 @@ class CornersProblem(search.SearchProblem):
             start state is in your state space, not the full Pacman state space
         """
 
-        return [self.starting_position, self.corner_states]
+        return [self.starting_position, [[corner, False] for corner in self.corners]]
 
     def is_goal_state(self, state):
         """Return True if and only if the state is a valid goal state.
@@ -379,20 +378,6 @@ class CornersProblem(search.SearchProblem):
             if not corner[1]:
                 return False
         return True
-
-    def eat_food(self, x, y, corners):
-        """Return a list of corners after checking if it ate  food.
-
-        Takes the x and y location to check if its a corner.
-        If its a corner eat the food at that corner.
-        """
-
-        for corner in corners:
-            if corner[0][0] == x and corner[0][1] == y:
-                if not corner[1]:
-                    corner[1] = True
-                return corners
-        return corners
 
     def get_successors(self, state):
         """Return successor states, the actions they require, and a cost of 1.
@@ -419,14 +404,14 @@ class CornersProblem(search.SearchProblem):
             next_x, next_y = int(x + dx), int(y + dy)
             hits_wall = self.walls[next_x][next_y]
 
-            # *** YOUR CODE HERE ***
-            # Note pass does nothing. It is only needed as a placeholder for
-            # an empty code block.  You should remove it once you have written
-            # actual code
             if not hits_wall:
                 copy_corners = state[1][:]
-                next_state = ([(next_x, next_y), self.eat_food(next_x, next_y, copy_corners)], action, 1)
-                successors.append(next_state)
+                for corner in copy_corners:
+                    if corner[0][0] == next_x and corner[0][1] == next_y:
+                        if not corner[1]:
+                            corner[1] = True
+                next_state = [(next_x, next_y), copy_corners]
+                successors.append((next_state, action, 1))
 
         self._expanded += 1  # DO NOT CHANGE
         return successors
