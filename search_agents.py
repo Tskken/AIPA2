@@ -352,12 +352,11 @@ class CornersProblem(search.SearchProblem):
         self.starting_position = starting_game_state.get_pacman_position()
         top, right = self.walls.height - 2, self.walls.width - 2
         self.corners = ((1, 1), (1, top), (right, 1), (right, top))
-        self.corner_states = []
         for corner in self.corners:
             if not starting_game_state.has_food(*corner):
                 print('Warning: no food in corner ' + str(corner))
-            self.corner_states.append([corner, False])
         self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
+        self.corner_states = [[corner, False] for corner in self.corners]
 
     def get_start_state(self):
         """Return the start state for the search problem.
@@ -367,17 +366,33 @@ class CornersProblem(search.SearchProblem):
         Important:
             start state is in your state space, not the full Pacman state space
         """
-        return self.starting_position
+
+        return [self.starting_position, self.corner_states]
 
     def is_goal_state(self, state):
         """Return True if and only if the state is a valid goal state.
 
         Overrides search.SearchProblem.is_goal_state
         """
-        for corner in self.corner_states:
+
+        for corner in state[1]:
             if not corner[1]:
                 return False
         return True
+
+    def eat_food(self, x, y, corners):
+        """Return a list of corners after checking if it ate  food.
+
+        Takes the x and y location to check if its a corner.
+        If its a corner eat the food at that corner.
+        """
+
+        for corner in corners:
+            if corner[0][0] == x and corner[0][1] == y:
+                if not corner[1]:
+                    corner[1] = True
+                return corners
+        return corners
 
     def get_successors(self, state):
         """Return successor states, the actions they require, and a cost of 1.
@@ -391,9 +406,6 @@ class CornersProblem(search.SearchProblem):
             required to get there, and 'step_cost' is the incremental
             cost of expanding to that successor
         """
-        for corner in self.corner_states:
-            if corner[0][0] == state[0] and corner[0][1] == state[1]:
-                corner[1] = True
 
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST,
@@ -402,7 +414,7 @@ class CornersProblem(search.SearchProblem):
             # legal.
             # Here's a code snippet for figuring out whether a new position
             # hits a wall:
-            x, y = state
+            x, y = state[0]
             dx, dy = Actions.direction_to_vector(action)
             next_x, next_y = int(x + dx), int(y + dy)
             hits_wall = self.walls[next_x][next_y]
@@ -412,7 +424,8 @@ class CornersProblem(search.SearchProblem):
             # an empty code block.  You should remove it once you have written
             # actual code
             if not hits_wall:
-                next_state = ((next_x, next_y), action, 1)
+                copy_corners = state[1][:]
+                next_state = ([(next_x, next_y), self.eat_food(next_x, next_y, copy_corners)], action, 1)
                 successors.append(next_state)
 
         self._expanded += 1  # DO NOT CHANGE
@@ -451,19 +464,12 @@ def corners_heuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    # some variables you may want to use:
-    #   problem.corners  -- these are the corner coordinates
-    #   problem.walls  -- these are the walls of the maze, as a Grid (game.py)
-
     distances = []
-
-    for corner in problem.corner_states:
+    for corner in state[1]:
         if not corner[1]:
-            distances.append(util.manhattan_distance(state, corner[0]))
-
+            distances.append(util.manhattan_distance(state[0], corner[0]))
     if len(distances) == 0:
         return 0
-
     return max(distances)  # Default to trivial solution
 
 
@@ -635,12 +641,11 @@ class ClosestDotSearchAgent(SearchAgent):
             game_state: where search starts from
         """
         # Here are some useful elements of the start_state
-        # start_position = game_state.get_pacman_position()
-        # food = game_state.get_food()
-        # walls = game_state.get_walls()
-        # problem = AnyFoodSearchProblem(game_state)
+        start_position = game_state.get_pacman_position()
+        food = game_state.get_food()
+        walls = game_state.get_walls()
+        problem = AnyFoodSearchProblem(game_state)
 
-        # *** YOUR CODE HERE ***
         util.raise_not_defined()
 
 
@@ -680,9 +685,6 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         Fill this in with a goal test that will complete the problem
         definition.
         """
-        x, y = state
-
-        # *** YOUR CODE HERE ***
         util.raise_not_defined()
 
 
