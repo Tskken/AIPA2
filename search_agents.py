@@ -356,6 +356,7 @@ class CornersProblem(search.SearchProblem):
             if not starting_game_state.has_food(*corner):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
+        self.starting_game_state = starting_game_state
 
     def get_start_state(self):
         """Return the start state for the search problem.
@@ -365,17 +366,20 @@ class CornersProblem(search.SearchProblem):
         Important:
             start state is in your state space, not the full Pacman state space
         """
-
-        return [self.starting_position, [[corner, False] for corner in self.corners]]
+        return [self.starting_position, []]
 
     def is_goal_state(self, state):
         """Return True if and only if the state is a valid goal state.
 
         Overrides search.SearchProblem.is_goal_state
         """
+        for corner in self.corners:
+            if state[0][0] == corner[0] and state[0][1] == corner[1]:
+                state[1].append(corner)
+                break
 
-        for corner in state[1]:
-            if not corner[1]:
+        for corner in self.corners:
+            if corner not in state[1]:
                 return False
         return True
 
@@ -391,7 +395,6 @@ class CornersProblem(search.SearchProblem):
             required to get there, and 'step_cost' is the incremental
             cost of expanding to that successor
         """
-
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST,
                        Directions.WEST]:
@@ -403,14 +406,8 @@ class CornersProblem(search.SearchProblem):
             dx, dy = Actions.direction_to_vector(action)
             next_x, next_y = int(x + dx), int(y + dy)
             hits_wall = self.walls[next_x][next_y]
-
             if not hits_wall:
-                copy_corners = state[1][:]
-                for corner in copy_corners:
-                    if corner[0][0] == next_x and corner[0][1] == next_y:
-                        if not corner[1]:
-                            corner[1] = True
-                next_state = [(next_x, next_y), copy_corners]
+                next_state = [(next_x, next_y), state[1].copy()]
                 successors.append((next_state, action, 1))
 
         self._expanded += 1  # DO NOT CHANGE
@@ -449,13 +446,9 @@ def corners_heuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    distances = []
-    for corner in state[1]:
-        if not corner[1]:
-            distances.append(util.manhattan_distance(state[0], corner[0]))
-    if len(distances) == 0:
-        return 0
-    return max(distances)  # Default to trivial solution
+    distances = [maze_distance(state[0], corner, problem.starting_game_state)
+                 for corner in problem.corners if corner not in state[1]]
+    return min(distances)
 
 
 class AStarCornersAgent(SearchAgent):
@@ -582,15 +575,11 @@ def food_heuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristic_info['wall_count']
     """
-    position, food_grid = state
-    maximum = 0
-    for food in food_grid.as_list():
-        distance = util.manhattan_distance(position, food)
-
-        if distance > maximum:
-            maximum = distance
-
-    return maximum
+    distances = [maze_distance(state[0], food, problem.starting_game_state)
+                 for food in state[1].as_list()]
+    if len(distances) == 0:
+        return 0
+    return max(distances)
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -631,10 +620,6 @@ class ClosestDotSearchAgent(SearchAgent):
         Args:
             game_state: where search starts from
         """
-        # Here are some useful elements of the start_state
-        start_position = game_state.get_pacman_position()
-        food = game_state.get_food()
-        walls = game_state.get_walls()
         problem = AnyFoodSearchProblem(game_state)
 
         return search.bfs(problem)
@@ -676,18 +661,11 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         Fill this in with a goal test that will complete the problem
         definition.
         """
-        closest = 9999  # Want to not have to use this line
-
-        # Finds nearest food using the manhattan_distance function
-        for food in self.food.as_list():
-            distance = util.manhattan_distance(state, food)
-            if distance < closest:
-                closest = distance
-                nearest_food = food
-
-        if state == nearest_food:
+        distances = [(util.manhattan_distance(state, food), food)
+                     for food in self.food.as_list()]
+        distance, food = min(distances)
+        if state == food:
             return True
-
         return False
 
 
